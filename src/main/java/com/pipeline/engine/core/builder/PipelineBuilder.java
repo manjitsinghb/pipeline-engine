@@ -5,40 +5,50 @@ import com.pipeline.engine.core.Pipeline;
 import com.spring.api.Consumer;
 import com.spring.api.Publisher;
 import com.spring.api.Transformer;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
-public class PipelineBuilder<U,V> {
+public class PipelineBuilder<U, V> {
 
-    public List<Consumer<U>> consumerList;
+    private Consumer<U> consumer;
 
-    public List<Publisher<V>> publisherList;
+    private List<Publisher<V>> publisherList;
 
-    public List<Transformer<U,V>> transformerList;
+    private Transformer<U, V> transformer;
+
+    private int parallelism = 1;
+
+    private String pipelineName;
+
+    public PipelineBuilder(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
 
-    public PipelineBuilder<U,V> withConsumers(List<Consumer<U>> consumerList){
-        this.consumerList = consumerList;
+    public PipelineBuilder<U, V> withConsumer(Consumer<U> consumer) {
+        this.consumer = consumer;
         return this;
     }
 
-    public PipelineBuilder<U,V> withPublishers(List<Publisher<V>> publisherList){
+    public PipelineBuilder<U, V> withPublishers(List<Publisher<V>> publisherList) {
         this.publisherList = publisherList;
         return this;
     }
 
-    public PipelineBuilder<U,V> withTransformers(List<Transformer<U,V>> transformerList){
-        this.transformerList = transformerList;
+    public PipelineBuilder<U, V> withTransformer(Transformer<U, V> transformer) {
+        this.transformer = transformer;
         return this;
     }
 
-    public Pipeline buildPipeline(){
-        if(CollectionUtils.isEmpty(consumerList)){
-            throw new IllegalArgumentException("Consumers are required for the pipeline");
-        }
-        return new Pipeline();
+    public PipelineBuilder<U, V> withParallelism(int parallelism) {
+        this.parallelism = parallelism;
+        return this;
     }
 
+    public Pipeline buildPipeline() {
+        Pipeline pipeline = new Pipeline();
+        pipeline.buildAndStartPipeline(this.consumer, this.transformer, this.publisherList, this.pipelineName, this.parallelism);
+        return pipeline;
+    }
 
 }
